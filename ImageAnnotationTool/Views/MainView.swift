@@ -10,7 +10,7 @@ import SwiftUI
 
 struct MainView: View {
     @EnvironmentObject var currentDoc: Document
-    @State private var zoom: CGFloat = 0.2
+    @State private var zoom: CGFloat = 1
     
     func zoomIn() { zoom = min(zoom + 0.2, 1.0) }
     func zoomOut() { zoom = max(zoom - 0.2, 0.2) }
@@ -31,8 +31,10 @@ struct MainView: View {
                         NavigationButton(action: { self.currentDoc.imageManager.prevImage() },
                                          label: "<",
                                          height: geometry.size.height)
+                        
                         EditorView(zoom: self.zoom,
-                                   size: self.currentDoc.imageManager.currentNSImage.size)
+                                   pixelSize: self.currentDoc.imageManager.currentNSImage.pixelSize)
+                        
                         NavigationButton(action: { self.currentDoc.imageManager.nextImage() },
                                          label: ">",
                                          height: geometry.size.height)
@@ -45,13 +47,13 @@ struct MainView: View {
                         Spacer()
                     }
 
-                    VStack {
-                        Spacer()
-                        HStack {
-                            ZoomButton(action: { self.zoomOut() }, label: "-")
-                            ZoomButton(action: { self.zoomIn() }, label: "+")
-                        }
-                    }
+//                    VStack {
+//                        Spacer()
+//                        HStack {
+//                            ZoomButton(action: { self.zoomOut() }, label: "-")
+//                            ZoomButton(action: { self.zoomIn() }, label: "+")
+//                        }
+//                    }
 
                 }
             }

@@ -24,7 +24,7 @@ struct ObjFrameView: View {
             }
         }
         .frame(width: width, height: height)
-        .position(position)
+        .position(CGPoint(x: position.x + width / 2, y: position.y + height / 2))
         //.onTapGesture { self.$selected.wrappedValue.toggle() }
     }
     

@@ -55,8 +55,10 @@ class ImageManager {
     
     private func updateCurrentImage() {
         DispatchQueue.main.async {
-            self.currentNSImage = NSImage(byReferencing: self.images[self.indexOfCurrentImage].url)
-            self.doc?.objectWillChange.send()
+            if self.indexOfCurrentImage < self.images.count {
+                self.currentNSImage = NSImage(byReferencing: self.images[self.indexOfCurrentImage].url)
+                self.doc?.objectWillChange.send()
+            }
         }
     }
     
@@ -113,5 +115,11 @@ extension ImageManager {
             result["No labels"] = Color.red
         }
         return result.map { ($0.key, $0.value) }.sorted { (lhv, rhv) in lhv.0 < rhv.0 }
+    }
+}
+
+extension NSImage {
+    var pixelSize: CGSize {
+        CGSize(width: self.representations.first?.pixelsWide ?? 0, height: self.representations.first?.pixelsHigh ?? 0)
     }
 }

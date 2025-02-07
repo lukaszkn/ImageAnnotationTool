@@ -11,8 +11,8 @@ import SwiftUI
 struct ObjectFramesLayer: View {
     
     @EnvironmentObject var currentDoc: Document
-    var zoom: CGFloat
-    var size: CGSize
+    var pixelRatio: CGFloat
+    
     @GestureState private var dragGestureState: DragGesture.Value? = nil
     
     private var newObjectFrame: ObjectFrame {
@@ -22,12 +22,12 @@ struct ObjectFramesLayer: View {
     var body: some View {
         ZStack {
             Rectangle()
-                .frame(width: size.width * zoom, height: size.height * zoom)
-                .position(CGPoint(x: size.width / 2, y: size.height / 2))
                 .opacity(0)
                 .contentShape(Rectangle())
                 .gesture(dragGesture)
-            //new object frame that currently in the adjust process
+                .border(Color.yellow)
+            
+            // new object frame that currently in the adjust process
             if self.dragGestureState != nil && currentDoc.labelManager.selectedLabel != nil {
                 ObjFrameView(width: self.newObjectFrame.width,
                              height: self.newObjectFrame.height,
@@ -35,12 +35,14 @@ struct ObjectFramesLayer: View {
                              color: currentDoc.labelManager.selectedLabel!.color,
                              selected: true)
             }
-            //object frames already existing in the model
+            
+            // object frames already existing in the model
             if self.currentDoc.currentImageInfo?.annotations != nil {
                 ForEach(self.currentDoc.currentImageInfo!.annotations!, id: \.self) { annotation in
-                    ObjFrameView(width: self.zoomedValue(annotation.coordinates.width),
-                                 height: self.zoomedValue(annotation.coordinates.height),
-                                 position: self.zoomedPoint(IntPoint(annotation.coordinates)),
+                    ObjFrameView(width: CGFloat(annotation.coordinates.width) / pixelRatio,
+                                 height: CGFloat(annotation.coordinates.height) / pixelRatio,
+                                 position: CGPoint(x: CGFloat(annotation.coordinates.x - annotation.coordinates.width / 2) / pixelRatio,
+                                                   y: CGFloat(annotation.coordinates.y - annotation.coordinates.height / 2) / pixelRatio),
                                  color: annotation.label.color,
                                  selected: false)
                         .contextMenu {
@@ -51,6 +53,7 @@ struct ObjectFramesLayer: View {
                     }
                 }
             }
+            
         }
 
     }
@@ -64,8 +67,8 @@ struct ObjectFramesLayer: View {
         init(dragGesureValue: DragGesture.Value) {
             width = (dragGesureValue.location.x - dragGesureValue.startLocation.x).magnitude
             height = (dragGesureValue.location.y - dragGesureValue.startLocation.y).magnitude
-            position = CGPoint(x: (dragGesureValue.startLocation.x + dragGesureValue.location.x)/2,
-                               y: (dragGesureValue.startLocation.y + dragGesureValue.location.y)/2)
+            position = CGPoint(x: dragGesureValue.startLocation.x,
+                               y: dragGesureValue.startLocation.y)
         }
     }
     
@@ -77,11 +80,12 @@ struct ObjectFramesLayer: View {
         .onEnded { currDrugState in
             if let selectedLabel = self.currentDoc.labelManager.selectedLabel {
                 let newObjectFrame = ObjectFrame(dragGesureValue: currDrugState)
-                let unzoomedPoint = self.unzoomedPoint(newObjectFrame.position)
-                let coordinates = ObjectAnnotation.Coordinates(x: unzoomedPoint.x,
-                                                    y: unzoomedPoint.y,
-                                                    width: self.unzoomedValue(newObjectFrame.width),
-                                                    height: self.unzoomedValue(newObjectFrame.height))
+                
+                let coordinates = ObjectAnnotation.Coordinates(x: Int((newObjectFrame.position.x + newObjectFrame.width / 2) * pixelRatio),
+                                                               y: Int((newObjectFrame.position.y + newObjectFrame.height / 2) * pixelRatio),
+                                                               width: Int(newObjectFrame.width * pixelRatio),
+                                                               height: Int(newObjectFrame.height * pixelRatio))
+                
                 let newAnnotation = ObjectAnnotation(label: selectedLabel, coordinates: coordinates)
                 self.currentDoc.currentImageInfo?.addNewObjAnnotation(newAnnotation)
                 self.currentDoc.objectWillChange.send()
@@ -89,30 +93,5 @@ struct ObjectFramesLayer: View {
 
         }
     }
-    
-    //MARK: - Zoom calculations
-    private func zoomedValue(_ val: Int) -> CGFloat {
-        zoom == 0 ? CGFloat(val) : CGFloat(val) * zoom
-    }
-    
-    private func unzoomedValue(_ val: CGFloat) -> Int {
-        zoom == 0 ? Int(val) : Int(val / zoom)
-    }
-    
-    private var zoomTransformation: CGAffineTransform {
-        let a_d = zoom
-        let t = { ($0 - self.zoom * $0) / 2 }
-        return CGAffineTransform(a: a_d           , b: 0,
-                                 c: 0             , d: a_d,
-                                 tx: t(size.width), ty: t(size.height))
-    }
-    
-    private func zoomedPoint(_ intPoint: IntPoint) -> CGPoint {
-        let point = CGPoint(x: intPoint.x, y: intPoint.y)
-        return point.applying(zoomTransformation)
-    }
 
-    private func unzoomedPoint(_ point: CGPoint) -> IntPoint {
-        return IntPoint(point.applying(zoomTransformation.inverted()))
-    }
 }
