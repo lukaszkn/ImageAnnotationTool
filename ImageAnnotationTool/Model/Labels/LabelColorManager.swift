@@ -13,13 +13,21 @@ final class LabelColorManager {
     private var baseColors = [ 0xfe0000, 0xff7900, 0xffb900, 0xffde00, 0xfcff00, 0xd2ff00, 0x05c000, 0x00c0a7, 0x0600ff, 0x6700bf, 0x9500c0, 0xbf0199 ]
     private var usedColors = [Color]()
     
-    func getColor () -> Color {
-        var resultColor: Color
+    func getColor (text: String? = nil) -> Color {
+        var resultColor: Color = Color.clear
         
-        if !baseColors.isEmpty {
-            resultColor = сolorFromHex(rgbValue: baseColors.removeLast())
-        } else {
-            resultColor = randomColor()
+        if let text = text?.lowercased() {
+            if text.contains("green") { resultColor = .green }
+            else if text.contains("white") { resultColor = .white }
+            else if text.contains("yellow") { resultColor = .yellow }
+        }
+        
+        if resultColor == .clear {
+            if !baseColors.isEmpty {
+                resultColor = сolorFromHex(rgbValue: baseColors.removeLast())
+            } else {
+                resultColor = randomColor()
+            }
         }
         usedColors.append(resultColor)
         

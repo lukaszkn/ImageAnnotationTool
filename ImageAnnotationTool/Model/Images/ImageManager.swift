@@ -25,6 +25,8 @@ class ImageManager {
         let url: URL
         let description: String
         let preview: NSImage
+        let pixelWidth: Int
+        let pixelHeight: Int
         
         static func imageDescription(_ url: URL, docURL: URL) -> String {
             let imagePath = url.absoluteString
@@ -33,23 +35,32 @@ class ImageManager {
             return String(imagePath.suffix(from: startIndex))
         }
         
-        static func imagePreview(_ url: URL) -> NSImage {
-            guard let imageData = NSData(contentsOf: url) else { return NSImage() }
+        static func imagePreview(_ url: URL) -> (NSImage, Int, Int) {
+            guard let imageData = NSData(contentsOf: url) else { return (NSImage(), 0, 0) }
             let options = [
                 kCGImageSourceCreateThumbnailWithTransform: true,
                 kCGImageSourceCreateThumbnailFromImageAlways: true,
                 kCGImageSourceThumbnailMaxPixelSize: 40] as CFDictionary
             let source = CGImageSourceCreateWithData(imageData, nil)!
-            let imageReference = CGImageSourceCreateThumbnailAtIndex(source, 0, options)!
-            let size = NSSize(width: imageReference.width, height: imageReference.height)
-            return NSImage(cgImage: imageReference, size: size)
+            
+            let actualImage = NSImage(data: imageData as Data)
+            if let actualImage {
+                let imageReference = CGImageSourceCreateThumbnailAtIndex(source, 0, options)!
+                let size = NSSize(width: imageReference.width, height: imageReference.height)
+                return (NSImage(cgImage: imageReference, size: size), Int(actualImage.pixelSize.width), Int(actualImage.pixelSize.height))
+            } else {
+                return (NSImage(), 0, 0)
+            }
         }
         
         init(url: URL, docURL: URL) {
             self.id = url.lastPathComponent
             self.url = url
             self.description = ImageManager.Image.imageDescription(url, docURL: docURL)
-            self.preview = ImageManager.Image.imagePreview(url)
+            let imagePreview = ImageManager.Image.imagePreview(url)
+            self.preview = imagePreview.0
+            self.pixelWidth = imagePreview.1
+            self.pixelHeight = imagePreview.2
         }
     }
     
@@ -73,6 +84,37 @@ class ImageManager {
         doc.delImagesInfo(names: lostNames)
         URLs.forEach { images.append(Image(url: $0, docURL: docURL)) }
         updateCurrentImage()
+    }
+    
+    func saveTxtLabels() {
+        guard let doc = doc, let docURL = doc.fileURL else { return }
+        
+        var text = """
+        train: DataSetFolder/images/train
+        val: DataSetFolder/images/val
+        
+        # Classes
+        names:
+        
+        """
+        text.append(contentsOf: doc.labelManager.labels.enumerated().map { (index, element) in "    \(index): \(element.text)" }.joined(separator: "\n"))
+        try? text.write(to: docURL.deletingPathExtension().appendingPathExtension("yaml"), atomically: true, encoding: .utf8)
+        
+        for image in images {
+            let annotations = doc.imagesInfo[image.id]?.annotations ?? []
+            
+            var txt = ""
+            for annotation in annotations {
+                txt.append("\(doc.labelManager.labels.firstIndex(where: { $0.text == annotation.label.text })!) ")
+                
+                txt.append("\(Double(annotation.coordinates.x) / Double(image.pixelWidth)) ")
+                txt.append("\(Double(annotation.coordinates.y) / Double(image.pixelHeight)) ")
+                txt.append("\(Double(annotation.coordinates.width) / Double(image.pixelWidth)) ")
+                txt.append("\(Double(annotation.coordinates.height) / Double(image.pixelHeight))\n")
+            }
+            
+            try? txt.write(to: image.url.deletingPathExtension().appendingPathExtension("txt"), atomically: true, encoding: .utf8)
+        }
     }
     
     init(doc: Document) {

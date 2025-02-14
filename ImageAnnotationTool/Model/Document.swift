@@ -61,8 +61,11 @@ class Document: NSDocument, ObservableObject {
     override func data(ofType typeName: String) throws -> Data {
         do {
             let encoder = JSONEncoder()
-            //encoder.outputFormatting = .prettyPrinted
+            encoder.outputFormatting = .prettyPrinted
             let arrayImagesInfo = imagesInfo.map { $0.value }
+            
+            imageManager.saveTxtLabels()
+            
             return try encoder.encode(arrayImagesInfo)
         } catch {
             throw error
@@ -74,7 +77,7 @@ class Document: NSDocument, ObservableObject {
             let decoder = JSONDecoder()
             decoder.userInfo[Document.docUserKey] = self
             let arrayImagesInfo = try decoder.decode([ImageInfo].self, from: data)
-            _ = arrayImagesInfo.map { imagesInfo[$0.imagefilename] = $0 }
+            _ = arrayImagesInfo.map { imagesInfo[$0.image] = $0 }
         } catch {
             throw error
         }

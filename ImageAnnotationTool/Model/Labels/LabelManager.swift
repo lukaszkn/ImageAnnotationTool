@@ -33,7 +33,7 @@ final class LabelManager {
             }
         }
         
-        let newLabel = Label(text: text, color: colorManager.getColor())
+        let newLabel = Label(text: text, color: colorManager.getColor(text: text))
         labels.append(newLabel)
         selectedLabel = newLabel
         
