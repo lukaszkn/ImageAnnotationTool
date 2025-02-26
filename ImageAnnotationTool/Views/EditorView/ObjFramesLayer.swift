@@ -49,7 +49,7 @@ struct ObjectFramesLayer: View {
                             Button(action: {
                                 self.currentDoc.currentImageInfo?.deleteObjAnnotation(annotation)
                                 self.currentDoc.objectWillChange.send()
-                                } ) { Text("Delete") }
+                            } ) { Text("Delete '\(annotation.label.text)'") }
                     }
                 }
             }
