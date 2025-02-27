@@ -32,7 +32,7 @@ struct ObjectFramesLayer: View {
                 ObjFrameView(width: self.newObjectFrame.width,
                              height: self.newObjectFrame.height,
                              position: self.newObjectFrame.position,
-                             color: currentDoc.labelManager.selectedLabel!.color,
+                             color: currentDoc.labelManager.selectedLabel!.color, caption: currentDoc.labelManager.selectedLabel?.text ?? "",
                              selected: true)
             }
             
@@ -43,7 +43,7 @@ struct ObjectFramesLayer: View {
                                  height: CGFloat(annotation.coordinates.height) / pixelRatio,
                                  position: CGPoint(x: CGFloat(annotation.coordinates.x - annotation.coordinates.width / 2) / pixelRatio,
                                                    y: CGFloat(annotation.coordinates.y - annotation.coordinates.height / 2) / pixelRatio),
-                                 color: annotation.label.color,
+                                 color: annotation.label.color, caption: annotation.label.text,
                                  selected: false)
                         .contextMenu {
                             Button(action: {

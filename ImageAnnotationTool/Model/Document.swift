@@ -74,7 +74,7 @@ class Document: NSDocument, ObservableObject {
     
     override func read(from data: Data, ofType typeName: String) throws {
         do {
-            Swift.print("url: \(self.fileURL)")
+            Swift.print("url: \(String(describing: self.fileURL))")
             
             let decoder = JSONDecoder()
             decoder.userInfo[Document.docUserKey] = self

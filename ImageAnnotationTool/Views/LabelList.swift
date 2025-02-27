@@ -31,7 +31,7 @@ struct LabelList: View {
                 Spacer()
             }
             
-        }.frame(minWidth: 100, idealWidth: 150, maxWidth: 300)
+        }.frame(minWidth: 100, idealWidth: 200, maxWidth: 300)
         
     }
 }

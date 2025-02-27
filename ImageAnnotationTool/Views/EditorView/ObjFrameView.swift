@@ -13,6 +13,7 @@ struct ObjFrameView: View {
     var height: CGFloat
     var position: CGPoint
     var color: Color
+    var caption: String
     @State var selected: Bool
     
     var body: some View {
@@ -30,26 +31,37 @@ struct ObjFrameView: View {
     
     var selectedLabel: some View {
         Rectangle()
-            .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [5]))
+            .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [5]))
             .foregroundColor(color)
             .contentShape(Rectangle())
+            .overlay(alignment: .topLeading) {
+                Text(caption)
+                    .foregroundStyle(color)
+                    .font(.caption)
+            }
     }
     
     var notSelectedLabel: some View {
         Rectangle()
-            .stroke(color, lineWidth: 2)
+            .stroke(color, lineWidth: 1)
             .opacity(0.6)
             .contentShape(Rectangle())
+            .overlay(alignment: .topLeading) {
+                Text(caption)
+                    .foregroundStyle(color)
+                    .font(.caption)
+            }
     }
 }
 
 struct LabelView_Previews: PreviewProvider {
     static var previews: some View {
         ObjFrameView(width: 100,
-                  height: 50,
-                  position: CGPoint(x: 100, y: 100),
-                  color: .orange,
-                  selected: false)
+                     height: 50,
+                     position: CGPoint(x: 100, y: 100),
+                     color: .orange,
+                     caption: "caption",
+                     selected: false)
     }
 }
 

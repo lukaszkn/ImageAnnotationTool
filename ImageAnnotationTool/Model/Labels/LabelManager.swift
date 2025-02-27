@@ -35,6 +35,7 @@ final class LabelManager {
         
         let newLabel = Label(text: text, color: colorManager.getColor(text: text))
         labels.append(newLabel)
+        labels.sort(by: { $0.text < $1.text })
         selectedLabel = newLabel
         
         return newLabel
@@ -42,6 +43,7 @@ final class LabelManager {
     
     func addLabel(label: Label) {
         labels.append(label)
+        labels.sort(by: { $0.text < $1.text })
         selectedLabel = label
     }
     
