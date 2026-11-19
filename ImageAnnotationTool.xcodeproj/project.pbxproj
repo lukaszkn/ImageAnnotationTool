@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A5E63EE92ECF31230051DA01 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = A5E63EEB2ECF31230051DA01 /* Yams */; };
 		A50A3E2D24696ED3000F86F3 /* EditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50A3E2C24696ED3000F86F3 /* EditorView.swift */; };
 		A50A3E2F246BAF13000F86F3 /* ObjFrameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50A3E2E246BAF13000F86F3 /* ObjFrameView.swift */; };
 		A52C5DAE2461587600836C16 /* LabelColorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52C5DAD2461587600836C16 /* LabelColorManager.swift */; };
@@ -56,6 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A5E63EE92ECF31230051DA01 /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -177,6 +179,9 @@
 			dependencies = (
 			);
 			name = ImageAnnotationTool;
+			packageProductDependencies = (
+				A5E63EEB2ECF31230051DA01 /* Yams */,
+			);
 			productName = ImageAnnotationTool;
 			productReference = A54FD17123FEED5E009B3412 /* ImageAnnotationTool.app */;
 			productType = "com.apple.product-type.application";
@@ -205,6 +210,9 @@
 				Base,
 			);
 			mainGroup = A54FD16823FEED5E009B3412;
+			packageReferences = (
+				A5E63EEA2ECF31230051DA01 /* XCRemoteSwiftPackageReference "Yams" */,
+			);
 			productRefGroup = A54FD17223FEED5E009B3412 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -457,6 +465,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A5E63EEA2ECF31230051DA01 /* XCRemoteSwiftPackageReference "Yams" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jpsim/Yams.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.2.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A5E63EEB2ECF31230051DA01 /* Yams */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A5E63EEA2ECF31230051DA01 /* XCRemoteSwiftPackageReference "Yams" */;
+			productName = Yams;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A54FD16923FEED5E009B3412 /* Project object */;
 }

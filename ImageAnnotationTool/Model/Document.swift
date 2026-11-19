@@ -31,7 +31,7 @@ class Document: NSDocument, ObservableObject {
         _ = names.map { imagesInfo.removeValue(forKey: $0) }
     }
     
-    static var docUserKey = CodingUserInfoKey(rawValue: "doc")!
+    static let labelManagerKey = CodingUserInfoKey(rawValue: "labelManager")!
     
     //MARK: - Initializers
     override init() {
@@ -59,31 +59,31 @@ class Document: NSDocument, ObservableObject {
     
     //MARK: - JSON
     override func data(ofType typeName: String) throws -> Data {
-        do {
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = .prettyPrinted
-            let arrayImagesInfo = imagesInfo.map { $0.value }
-            
-            imageManager.saveTxtLabels()
-            
-            return try encoder.encode(arrayImagesInfo)
-        } catch {
-            throw error
-        }
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        return try encoder.encode(Array(imagesInfo.values))
     }
     
-    override func read(from data: Data, ofType typeName: String) throws {
-        do {
-            Swift.print("url: \(String(describing: self.fileURL))")
-            
-            let decoder = JSONDecoder()
-            decoder.userInfo[Document.docUserKey] = self
-            let arrayImagesInfo = try decoder.decode([ImageInfo].self, from: data)
-            _ = arrayImagesInfo.map { imagesInfo[$0.image] = $0 }
-        } catch {
-            throw error
+    override func writeSafely(to url: URL, ofType typeName: String, for saveOperation: NSDocument.SaveOperationType) throws {
+        try super.writeSafely(to: url, ofType: typeName, for: saveOperation)
+        try LabelFile.write(names: labelManager.labels.map(\.text), nextTo: url)
+        imageManager.saveTxtLabels()
+    }
+
+    override func read(from url: URL, ofType typeName: String) throws {
+        let loadedLabels = LabelManager(doc: nil)
+        for name in try LabelFile.readNames(nextTo: url) {
+            _ = loadedLabels.addLabel(name)
         }
-        imageManager.checkAndUpdateImagesInfo()
+
+        let decoder = JSONDecoder()
+        decoder.userInfo[Self.labelManagerKey] = loadedLabels
+        let loadedImages = try decoder.decode([ImageInfo].self, from: Data(contentsOf: url))
+
+        loadedLabels.doc = self
+        labelManager = loadedLabels
+        imagesInfo = Dictionary(loadedImages.map { ($0.image, $0) }, uniquingKeysWith: { _, latest in latest })
+        imageManager.checkAndUpdateImagesInfo(documentURL: url, removeMissingImageInfo: false)
     }
     
 }

@@ -66,39 +66,28 @@ class ImageManager {
     
     private func updateCurrentImage() {
         DispatchQueue.main.async {
-            if self.indexOfCurrentImage < self.images.count {
-                self.currentNSImage = NSImage(byReferencing: self.images[self.indexOfCurrentImage].url)
-                self.doc?.objectWillChange.send()
-            }
+            self.currentNSImage = self.currentImage.map { NSImage(byReferencing: $0.url) } ?? NSImage()
+            self.doc?.objectWillChange.send()
         }
     }
     
-    func checkAndUpdateImagesInfo() {
-        guard let doc = doc, let docURL = doc.fileURL else { return }
+    func checkAndUpdateImagesInfo(documentURL: URL? = nil, removeMissingImageInfo: Bool = true) {
+        guard let doc = doc, let docURL = documentURL ?? doc.fileURL else { return }
         let URLs = docURL.deletingLastPathComponent().findImages()
         let fileImageNames = Set(URLs.map { $0.lastPathComponent })
         let docImageNames = Set(doc.imagesInfo.map { $0.key })
         let newNames = fileImageNames.subtracting(docImageNames)
-        let lostNames = docImageNames.subtracting(fileImageNames)
         doc.addImagesInfo(names: newNames)
-        doc.delImagesInfo(names: lostNames)
-        URLs.forEach { images.append(Image(url: $0, docURL: docURL)) }
-        updateCurrentImage()
+        if removeMissingImageInfo {
+            doc.delImagesInfo(names: docImageNames.subtracting(fileImageNames))
+        }
+        let selectedURL = currentImage?.url
+        images = URLs.map { Image(url: $0, docURL: docURL) }
+        indexOfCurrentImage = images.firstIndex { $0.url == selectedURL } ?? 0
     }
     
     func saveTxtLabels() {
-        guard let doc = doc, let docURL = doc.fileURL else { return }
-        
-        var text = """
-        train: DataSetFolder/images/train
-        val: DataSetFolder/images/val
-        
-        # Classes
-        names:
-        
-        """
-        text.append(contentsOf: doc.labelManager.labels.enumerated().map { (index, element) in "    \(index): \(element.text)" }.joined(separator: "\n"))
-        try? text.write(to: docURL.deletingPathExtension().appendingPathExtension("yaml"), atomically: true, encoding: .utf8)
+        guard let doc = doc else { return }
         
         for image in images {
             let annotations = doc.imagesInfo[image.id]?.annotations ?? []
@@ -125,6 +114,7 @@ class ImageManager {
 extension ImageManager {
     //MARK: - Images control
     func nextImage() {
+        guard !images.isEmpty else { return }
         indexOfCurrentImage = min(indexOfCurrentImage + 1, images.endIndex - 1)
     }
     

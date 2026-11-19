@@ -60,10 +60,10 @@ struct ObjectAnnotation: Codable, Identifiable, Hashable {
     }
     
     init(from decoder: Decoder) throws {
-        let doc = decoder.userInfo[Document.docUserKey]! as! Document
+        let labelManager = decoder.userInfo[Document.labelManagerKey] as! LabelManager
         let values = try decoder.container(keyedBy: CodingKeys.self)
         let labelText = try values.decode(String.self, forKey: .label)
-        label = doc.labelManager.addLabel(labelText)
+        label = labelManager.addLabel(labelText)
         coordinates = try values.decode(Coordinates.self, forKey: .coordinates)
     }
     

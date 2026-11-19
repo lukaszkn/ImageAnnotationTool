@@ -37,6 +37,7 @@ struct LabelList: View {
 }
 
 struct LabelRow: View {
+    @EnvironmentObject var currentDoc: Document
     var label: Label
     @State var editableText: String
     
@@ -50,7 +51,10 @@ struct LabelRow: View {
                 .cornerRadius(4.0)
             TextField("Label name",
                       text: $editableText,
-                      onCommit: { self.label.text = self.editableText } )
+                      onCommit: {
+                          currentDoc.labelManager.renameLabel(label, to: editableText)
+                          editableText = label.text
+                      })
         }
     }
     

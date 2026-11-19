@@ -20,6 +20,7 @@ final class LabelColorManager {
             if text.contains("green") { resultColor = .green }
             else if text.contains("white") { resultColor = .white }
             else if text.contains("yellow") { resultColor = .yellow }
+            else if text.contains("red") { resultColor = .red }
         }
         
         if resultColor == .clear {
